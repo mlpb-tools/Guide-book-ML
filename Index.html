@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>LS4YOU – Diagnostic Life Skills & Bilan d’orientation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{
+      --ls-red:#C62828;
+      --ls-yellow:#FFD54F;
+      --ls-turquoise:#26C6DA;
+      --ls-mint:#A5E9D4;
+      --ls-orange:#FFB74D;
+      --ls-white:#FFFFFF;
+      --ls-black:#111111;
+      --card-radius:24px;
+    }
+
+    body{
+      font-family:"Montserrat",system-ui,-apple-system, BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:radial-gradient(circle at 0% 0%, #FFFDE7 0, #FFFFFF 40%, #E3F2FD 100%);
+      color:var(--ls-black);
+    }
+
+    .ls-title{
+      font-family:"Poppins",sans-serif;
+      font-weight:800;
+      letter-spacing:0.03em;
+    }
+
+    .ls-section-card{
+      border-radius:var(--card-radius);
+      background:#FFFFFF;
+      box-shadow:0 16px 40px rgba(0,0,0,0.08);
+      border:1px solid rgba(0,0,0,0.05);
+    }
+
+    .ls-pill{
+      border-radius:999px;
+      padding:0.25rem 0.75rem;
+      font-size:0.75rem;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      font-weight:700;
+      font-family:"Poppins",sans-serif;
+    }
+
+    .step-dot{
+      width:14px;
+      height:14px;
+      border-radius:999px;
+      border:2px solid rgba(0,0,0,0.2);
+      background:#FFFFFF;
+      transition:all .25s ease;
+    }
+    .step-dot.active{
+      background:var(--ls-red);
+      border-color:var(--ls-red);
+      transform:scale(1.15);
+    }
+
+    .question-card{
+      border-radius:18px;
+      padding:1.1rem 1.25rem;
+      background:#FFFDF9;
+      border:1px solid rgba(0,0,0,0.04);
+      position:relative;
+      overflow:hidden;
+    }
+    .question-card::before{
+      content:"";
+      position:absolute;
+      right:-20px;
+      bottom:-20px;
+      width:80px;
+      height:80px;
+      background:radial-gradient(circle, rgba(255,183,77,0.55) 0, transparent 70%);
+      opacity:.9;
+    }
+
+    .answer-chip{
+      border-radius:999px;
+      padding:0.4rem 0.9rem;
+      font-size:0.8rem;
+      font-weight:600;
+      border:1px solid rgba(0,0,0,0.08);
+      background:#FFFFFF;
+      display:inline-flex;
+      align-items:center;
+      gap:0.35rem;
+      cursor:pointer;
+      transition:all .18s ease;
+    }
+    .answer-chip span.emoji{font-size:1.05rem;}
+    .answer-chip:hover{
+      transform:translateY(-1px);
+      box-shadow:0 6px 16px rgba(0,0,0,0.08);
+    }
+    .answer-chip.selected{
+      background:var(--ls-red);
+      color:#FFFFFF;
+      border-color:var(--ls-red);
+      box-shadow:0 8px 18px rgba(198,40,40,0.45);
+    }
+
+    .domain-tag{
+      font-size:0.68rem;
+      font-weight:700;
+      letter-spacing:0.09em;
+      text-transform:uppercase;
+      padding:0.25rem 0.7rem;
+      border-radius:999px;
+    }
+
+    .floating-badge{
+      border-radius:999px;
+      padding:0.4rem 0.9rem;
+      font-size:0.72rem;
+      background:#FFFFFF;
+      display:inline-flex;
+      align-items:center;
+      gap:0.35rem;
+      box-shadow:0 8px 22px rgba(0,0,0,0.08);
+    }
+
+    .capsule-frise{
+      display:flex;
+      gap:0.35rem;
+      justify-content:center;
+      margin-top:1.4rem;
+      flex-wrap:wrap;
+    }
+    .capsule{
+      width:38px;
+      height:10px;
+      border-radius:999px;
+    }
+
+    .primary-btn{
+      border-radius:999px;
+      padding:0.9rem 1.9rem;
+      font-weight:700;
+      font-family:"Poppins",sans-serif;
+      background:var(--ls-red);
+      color:#FFFFFF;
+      display:inline-flex;
+      align-items:center;
+      gap:0.5rem;
+      box-shadow:0 14px 30px rgba(198,40,40,0.45);
+      transition:all .18s ease;
+      border:none;
+    }
+    .primary-btn:hover{transform:translateY(-1px) scale(1.01);}
+    .secondary-btn{
+      border-radius:999px;
+      padding:0.7rem 1.6rem;
+      font-weight:600;
+      font-family:"Poppins",sans-serif;
+      background:#FFFFFF;
+      color:var(--ls-red);
+      border:1px solid rgba(0,0,0,0.12);
+      display:inline-flex;
+      align-items:center;
+      gap:0.45rem;
+      transition:all .18s ease;
+    }
+    .secondary-btn:hover{background:#FFF7F7;}
+
+    .page{
+      display:none;
+    }
+    .page.active{
+      display:block;
+    }
+
+    @media (max-width:640px){
+      .ls-title{font-size:1.6rem;}
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <div class="max-w-6xl mx-auto px-4 py-6 md:py-10">
+
+    <!-- HEADER -->
+    <header class="mb-8 md:mb-12 relative">
+      <div class="absolute -top-6 -left-6 w-24 h-24 rounded-full" style="background:radial-gradient(circle, #FFE082 0, transparent 75%); opacity:0.8;"></div>
+      <div class="absolute -bottom-6 -right-8 w-32 h-32 rounded-full" style="background:radial-gradient(circle, #80DEEA 0, transparent 70%); opacity:0.7;"></div>
+
+      <div class="ls-section-card relative px-4 md:px-8 py-5 md:py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+        <!-- Left : title -->
+        <div class="relative z-10">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="ls-pill bg-[#FFE082] text-[0.7rem] text-[var(--ls-red)]">Diagnostic & Bilan d’orientation</span>
+          </div>
+          <h1 class="ls-title text-[1.9rem] md:text-[2.4rem] leading-tight text-[var(--ls-red)]">
+            Life Skills for Youth<br/>
+            <span class="text-[1.55rem] md:text-[1.9rem] text-slate-800">Mon bilan de compétences & projets</span>
+          </h1>
+          <p class="mt-3 text-sm md:text-[0.95rem] text-slate-700 max-w-xl">
+            Un parcours interactif pour faire le point sur tes <strong>11 domaines de vie</strong> 
+            (emploi, formation, santé, logement, mobilité, etc.) à partir de tes 
+            <strong>Life Skills</strong> : personnalité, valorisation de soi, bien-être et ressources.
+          </p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <div class="floating-badge text-[0.7rem]">
+              <span>🧩</span><span>Identifier</span>
+            </div>
+            <div class="floating-badge text-[0.7rem]">
+              <span>📏</span><span>Mesurer</span>
+            </div>
+            <div class="floating-badge text-[0.7rem]">
+              <span>🚀</span><span>Mettre en œuvre</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right : big circle + logos -->
+        <div class="flex flex-col items-center gap-4 md:gap-5">
+          <div class="relative">
+            <div class="w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden border-[6px] border-white shadow-xl"
+                 style="background:radial-gradient(circle at 30% 0%, #FFB74D 0, #FF5252 60%, #C62828 100%);">
+              <!-- Placeholder silhouette -->
+              <div class="w-full h-full flex items-center justify-center text-4xl md:text-5xl text-white">
+                🙂 
+              </div>
+            </div>
+            <div class="absolute -bottom-2 -right-2 w-16 h-16 rounded-full bg-[var(--ls-turquoise)] flex items-center justify-center shadow-lg">
+              <span class="text-white text-2xl">⭐</span>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center gap-2">
+            <div class="text-[0.7rem] uppercase tracking-[0.15em] font-semibold text-slate-500">
+              Partenaires
+            </div>
+            <div class="flex items-center gap-4 flex-wrap justify-center">
+              <img src="https://static.wixstatic.com/media/dd5dab_31e98305be67485d92cdb56f82c0e03f~mv2.png/v1/fill/w_560,h_224,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/LS4YOU_Logo.png"
+                   alt="LS4YOU logo" class="h-10 md:h-12 object-contain"/>
+              <img src="https://static.wixstatic.com/media/dd5dab_47743b1c86024865ba19e623a3db327f~mv2.avif/v1/fill/w_313,h_84,al_c,lg_1,q_80,enc_avif,quality_auto/dd5dab_47743b1c86024865ba19e623a3db327f~mv2.avif"
+                   alt="Mission Locale Pays Basque" class="h-10 md:h-12 object-contain"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="capsule-frise">
+        <div class="capsule" style="background:#FFCDD2;"></div>
+        <div class="capsule" style="background:#FFE082;"></div>
+        <div class="capsule" style="background:#80DEEA;"></div>
+        <div class="capsule" style="background:#FFB74D;"></div>
+        <div class="capsule" style="background:#C5E1A5;"></div>
+      </div>
+    </header>
+
+    <!-- PROGRESSION STEPPER -->
+    <div class="mb-6 md:mb-8">
+      <div class="flex items-center justify-between gap-1">
+        <div class="flex items-center gap-2">
+          <div class="step-dot active" data-step="0"></div>
+          <span class="text-[0.75rem] font-semibold text-slate-600 uppercase tracking-[0.12em]">Accueil</span>
+        </div>
+        <div class="text-[0.75rem] text-slate-500">
+          <span id="globalProgressText">0%</span> complété
+        </div>
+      </div>
+      <div class="mt-2 h-2 rounded-full bg-slate-200 overflow-hidden">
+        <div id="globalProgressBar" class="h-full rounded-full" style="background:linear-gradient(90deg,#C62828,#FFB74D,#26C6DA); width:0%;"></div>
+      </div>
+    </div>
+
+    <!-- PAGES -->
+    <main>
+      <!-- PAGE 0 – ACCUEIL -->
+      <section id="page-0" class="page active">
+        <div class="ls-section-card px-5 md:px-8 py-7 md:py-10">
+          <div class="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h2 class="ls-title text-[1.6rem] text-[var(--ls-red)] mb-3">
+                Bienvenue dans ton bilan Life Skills
+              </h2>
+              <p class="text-sm md:text-[0.95rem] text-slate-700 mb-4">
+                Tu vas répondre à des questions simples sur <strong>11 domaines</strong> de ta vie :
+                emploi, formation, santé, logement, mobilité, citoyenneté, budget, loisirs,
+                numérique et mode de vie.
+              </p>
+              <p class="text-sm md:text-[0.95rem] text-slate-700 mb-4">
+                Chaque question te propose 4 réponses : 
+              </p>
+              <ul class="text-sm text-slate-700 space-y-1 mb-4">
+                <li>😅 <strong>Pas encore</strong> – ce n’est pas en place pour l’instant</li>
+                <li>🙂 <strong>En progrès</strong> – j’y pense / je commence</li>
+                <li>💪 <strong>À l’aise</strong> – je gère plutôt bien</li>
+                <li>🌟 <strong>Très à l’aise</strong> – c’est une vraie force pour moi</li>
+              </ul>
+              <p class="text-sm text-slate-700 mb-5">
+                À la fin, tu verras ton profil sous forme de <strong>graphique</strong> et un
+                début de <strong>plan d’actions Life Skills</strong> à construire avec ton conseiller.
+              </p>
+
+              <div class="flex flex-wrap gap-3 items-center">
+                <button id="startBtn" class="primary-btn">
+                  <span>Commencer le bilan</span> <span>🚀</span>
+                </button>
+                <button id="skipInfoBtn" class="secondary-btn">
+                  <span>Voir directement les domaines</span> <span>➡️</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="relative">
+              <div class="absolute -top-6 right-4 w-20 h-20 rounded-full" style="background:#FFE082;"></div>
+              <div class="absolute -bottom-6 left-0 w-24 h-24 rounded-full" style="background:#80DEEA;"></div>
+              <div class="ls-section-card px-5 py-5 relative bg-gradient-to-br from-[#FFF8E1] to-[#E1F5FE]">
+                <div class="text-[0.78rem] uppercase tracking-[0.15em] font-semibold text-slate-500 mb-3">
+                  Les 4 grands axes Life Skills
+                </div>
+                <div class="space-y-3 text-sm">
+                  <div class="flex gap-3 items-start">
+                    <span class="text-xl">🧬</span>
+                    <div>
+                      <div class="font-semibold text-slate-800">Personnalité</div>
+                      <div class="text-slate-600 text-[0.85rem]">Qui je suis, comment je réagis, ce que j’aime ou non.</div>
+                    </div>
+                  </div>
+                  <div class="flex gap-3 items-start">
+                    <span class="text-xl">✨</span>
+                    <div>
+                      <div class="font-semibold text-slate-800">Valorisation de soi</div>
+                      <div class="text-slate-600 text-[0.85rem]">Comment je parle de moi, de mes forces, de mes projets.</div>
+                    </div>
+                  </div>
+                  <div class="flex gap-3 items-start">
+                    <span class="text-xl">🌱</span>
+                    <div>
+                      <div class="font-semibold text-slate-800">Bien-être physique & mental</div>
+                      <div class="text-slate-600 text-[0.85rem]">Mon équilibre, mon énergie, ma façon de gérer le stress.</div>
+                    </div>
+                  </div>
+                  <div class="flex gap-3 items-start">
+                    <span class="text-xl">💰</span>
+                    <div>
+                      <div class="font-semibold text-slate-800">Ressources & autonomie</div>
+                      <div class="text-slate-600 text-[0.85rem]">Budget, logement, mobilité, accès au numérique et aux droits.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-4 text-[0.75rem] text-slate-500">
+                  ➜ Toutes les questions du bilan regardent ces axes à travers tes 11 domaines de vie.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TEMPLATE DOMAINE -->
+      <!-- Chaque section suivante reprend la même structure, avec 4–5 questions par domaine. -->
+
+      <!-- PAGE 1 – EMPLOI -->
+      <section id="page-1" class="page">
+        <div class="ls-section-card px-5 md:px-8 py-7 md:py-9">
+          <div class="flex flex-wrap justify-between gap-3 mb-5">
+            <div>
+              <div class="domain-tag bg-[#FFC1C1] text-[var(--ls-red)] mb-2">Domaine 1</div>
+              <h2 class="ls-title text-[1.5rem] text-[var(--ls-red)] mb-1">Emploi & expérience professionnelle</h2>
+              <p class="text-sm text-slate-700 max-w-2xl">
+                On parle ici de tes recherches d’emploi, de tes expériences (job, stage, mission courte),
+                de la façon dont tu te projettes dans le monde du travail.
+              </p>
+            </div>
+            <div class="floating-badge text-[0.7rem]">
+              <span>🎯</span> <span>Objectif : mieux cibler tes envies et tes forces pour l’emploi</span>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="question-card" data-question-id="emploi-1" data-domain="emploi" data-axis="personnalite">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je sais ce que j’attends d’un job (ambiance, rythme, tâches, horaires…)
+              </p>
+            </div>
+            <div class="question-card" data-question-id="emploi-2" data-domain="emploi" data-axis="valorisation">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je suis à l’aise pour parler de mes qualités en lien avec un emploi ou un stage
+              </p>
+            </div>
+            <div class="question-card" data-question-id="emploi-3" data-domain="emploi" data-axis="bien-etre">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je me sens capable de gérer le stress lié à un entretien ou à une première journée de travail
+              </p>
+            </div>
+            <div class="question-card" data-question-id="emploi-4" data-domain="emploi" data-axis="ressources">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je sais où trouver des offres d’emploi ou de stages qui me correspondent
+              </p>
+            </div>
+            <div class="question-card" data-question-id="emploi-5" data-domain="emploi" data-axis="ressources">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je connais des personnes ou des lieux ressources qui peuvent m’aider dans mes recherches
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 2 – FORMATION -->
+      <section id="page-2" class="page">
+        <div class="ls-section-card px-5 md:px-8 py-7 md:py-9">
+          <div class="flex flex-wrap justify-between gap-3 mb-5">
+            <div>
+              <div class="domain-tag bg-[#FFE082] text-[var(--ls-red)] mb-2">Domaine 2</div>
+              <h2 class="ls-title text-[1.5rem] text-[var(--ls-red)] mb-1">Formation & apprentissages</h2>
+              <p class="text-sm text-slate-700 max-w-2xl">
+                On regarde ici ta façon d’apprendre, ton rapport à l’école ou à la formation, et ta capacité à 
+                te projeter dans un parcours.
+              </p>
+            </div>
+            <div class="floating-badge text-[0.7rem]">
+              <span>📚</span><span>Objectif : clarifier ton rapport à la formation</span>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="question-card" data-question-id="formation-1" data-domain="formation" data-axis="personnalite">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je connais mes façons préférées d’apprendre (écouter, pratiquer, regarder des vidéos…)
+              </p>
+            </div>
+            <div class="question-card" data-question-id="formation-2" data-domain="formation" data-axis="valorisation">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je suis capable d’expliquer ce que j’ai déjà appris ou réussi dans mes études ou formations
+              </p>
+            </div>
+            <div class="question-card" data-question-id="formation-3" data-domain="formation" data-axis="bien-etre">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je sais comment m’organiser pour réviser ou suivre une formation sans me sentir débordé·e
+              </p>
+            </div>
+            <div class="question-card" data-question-id="formation-4" data-domain="formation" data-axis="ressources">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je connais des formations possibles en lien avec mes centres d’intérêt
+              </p>
+            </div>
+            <div class="question-card" data-question-id="formation-5" data-domain="formation" data-axis="ressources">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je sais à qui m’adresser pour être accompagné·e dans un projet de formation
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 3 – ORIENTATION -->
+      <section id="page-3" class="page">
+        <div class="ls-section-card px-5 md:px-8 py-7 md:py-9">
+          <div class="flex flex-wrap justify-between gap-3 mb-5">
+            <div>
+              <div class="domain-tag bg-[#B3E5FC] text-[var(--ls-red)] mb-2">Domaine 3</div>
+              <h2 class="ls-title text-[1.5rem] text-[var(--ls-red)] mb-1">Projet & orientation</h2>
+              <p class="text-sm text-slate-700 max-w-2xl">
+                Ici on parle de tes envies pour la suite : idées de métiers, de projets, de lieux de vie, de rythmes de vie.
+              </p>
+            </div>
+            <div class="floating-badge text-[0.7rem]">
+              <span>🧭</span><span>Objectif : éclairer où tu veux aller</span>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="question-card" data-question-id="orientation-1" data-domain="orientation" data-axis="personnalite">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                J’ai une idée (même vague) de ce que j’aimerais faire plus tard
+              </p>
+            </div>
+            <div class="question-card" data-question-id="orientation-2" data-domain="orientation" data-axis="valorisation">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je sais parler de mes centres d’intérêt et de ce qui a du sens pour moi
+              </p>
+            </div>
+            <div class="question-card" data-question-id="orientation-3" data-domain="orientation" data-axis="bien-etre">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je me sens plutôt confiant·e quand je pense à mon avenir
+              </p>
+            </div>
+            <div class="question-card" data-question-id="orientation-4" data-domain="orientation" data-axis="ressources">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je connais des outils ou des personnes qui peuvent m’aider à explorer des métiers
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 4 – MOBILITÉ -->
+      <section id="page-4" class="page">
+        <div class="ls-section-card px-5 md:px-8 py-7 md:py-9">
+          <div class="flex flex-wrap justify-between gap-3 mb-5">
+            <div>
+              <div class="domain-tag bg-[#C5E1A5] text-[var(--ls-red)] mb-2">Domaine 4</div>
+              <h2 class="ls-title text-[1.5rem] text-[var(--ls-red)] mb-1">Mobilité & déplacements</h2>
+              <p class="text-sm text-slate-700 max-w-2xl">
+                On regarde comment tu te déplaces pour te former, travailler, voir des proches ou découvrir d’autres lieux.
+              </p>
+            </div>
+            <div class="floating-badge text-[0.7rem]">
+              <span>🚌</span><span>Objectif : sécuriser tes déplacements utiles à ton projet</span>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="question-card" data-question-id="mobilite-1" data-domain="mobilite" data-axis="personnalite">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je me sens à l’aise pour me déplacer vers un lieu que je ne connais pas
+              </p>
+            </div>
+            <div class="question-card" data-question-id="mobilite-2" data-domain="mobilite" data-axis="ressources">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je sais quels moyens de transport je peux utiliser (bus, train, covoiturage…)
+              </p>
+            </div>
+            <div class="question-card" data-question-id="mobilite-3" data-domain="mobilite" data-axis="bien-etre">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je gère plutôt bien le stress lié aux trajets (retard, changement, imprévu…)
+              </p>
+            </div>
+            <div class="question-card" data-question-id="mobilite-4" data-domain="mobilite" data-axis="ressources">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                J’ai les documents ou aides nécessaires (abonnements, permis en cours, aides mobilité…)
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 5 – SANTÉ -->
+      <section id="page-5" class="page">
+        <div class="ls-section-card px-5 md:px-8 py-7 md:py-9">
+          <div class="flex flex-wrap justify-between gap-3 mb-5">
+            <div>
+              <div class="domain-tag bg-[#FFCDD2] text-[var(--ls-red)] mb-2">Domaine 5</div>
+              <h2 class="ls-title text-[1.5rem] text-[var(--ls-red)] mb-1">Santé physique & mentale</h2>
+              <p class="text-sm text-slate-700 max-w-2xl">
+                Ici on parle de ton énergie, ton sommeil, ton moral, ton stress et de la façon dont tu prends soin de toi.
+              </p>
+            </div>
+            <div class="floating-badge text-[0.7rem]">
+              <span>🌱</span><span>Objectif : repérer ce qui soutient ton équilibre</span>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="question-card" data-question-id="sante-1" data-domain="sante" data-axis="bien-etre">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Globalement, j’ai assez d’énergie pour mes journées
+              </p>
+            </div>
+            <div class="question-card" data-question-id="sante-2" data-domain="sante" data-axis="bien-etre">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je connais des façons qui m’aident à me détendre ou à faire redescendre la pression
+              </p>
+            </div>
+            <div class="question-card" data-question-id="sante-3" data-domain="sante" data-axis="personnalite">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je repère assez vite quand je ne vais pas bien (physiquement ou moralement)
+              </p>
+            </div>
+            <div class="question-card" data-question-id="sante-4" data-domain="sante" data-axis="ressources">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je sais vers qui me tourner si j’ai besoin d’aide pour ma santé
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 6 – LOGEMENT -->
+      <section id="page-6" class="page">
+        <div class="ls-section-card px-5 md:px-8 py-7 md:py-9">
+          <div class="flex flex-wrap justify-between gap-3 mb-5">
+            <div>
+              <div class="domain-tag bg-[#FFE082] text-[var(--ls-red)] mb-2">Domaine 6</div>
+              <h2 class="ls-title text-[1.5rem] text-[var(--ls-red)] mb-1">Logement & cadre de vie</h2>
+              <p class="text-sm text-slate-700 max-w-2xl">
+                On parle de l’endroit où tu vis, de ta sécurité, de ta tranquillité et de ta capacité à y organiser ton quotidien.
+              </p>
+            </div>
+            <div class="floating-badge text-[0.7rem]">
+              <span>🏡</span><span>Objectif : voir si ton lieu de vie soutient tes projets</span>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="question-card" data-question-id="logement-1" data-domain="logement" data-axis="bien-etre">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je me sens en sécurité là où je vis
+              </p>
+            </div>
+            <div class="question-card" data-question-id="logement-2" data-domain="logement" data-axis="bien-etre">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                J’ai un espace (même petit) où je peux me poser pour me reposer ou travailler
+              </p>
+            </div>
+            <div class="question-card" data-question-id="logement-3" data-domain="logement" data-axis="ressources">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je connais mes droits ou les aides possibles pour le logement
+              </p>
+            </div>
+            <div class="question-card" data-question-id="logement-4" data-domain="logement" data-axis="personnalite">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je parviens à m’adapter aux règles ou contraintes de mon logement actuel
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 7 – CITOYENNETÉ -->
+      <section id="page-7" class="page">
+        <div class="ls-section-card px-5 md:px-8 py-7 md:py-9">
+          <div class="flex flex-wrap justify-between gap-3 mb-5">
+            <div>
+              <div class="domain-tag bg-[#B3E5FC] text-[var(--ls-red)] mb-2">Domaine 7</div>
+              <h2 class="ls-title text-[1.5rem] text-[var(--ls-red)] mb-1">Citoyenneté, engagement & vie sociale</h2>
+              <p class="text-sm text-slate-700 max-w-2xl">
+                Ici on regarde ta place dans la société : participation, bénévolat, échanges, capacité à te sentir légitime.
+              </p>
+            </div>
+            <div class="floating-badge text-[0.7rem]">
+              <span>🧩</span><span>Objectif : repérer comment tu prends ta place</span>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="question-card" data-question-id="citoyennete-1" data-domain="citoyennete" data-axis="personnalite">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                J’ose donner mon avis quand un sujet me concerne
+              </p>
+            </div>
+            <div class="question-card" data-question-id="citoyennete-2" data-domain="citoyennete" data-axis="valorisation">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je me sens légitime pour participer à des projets collectifs (atelier, association, conseil de jeunes…)
+              </p>
+            </div>
+            <div class="question-card" data-question-id="citoyennete-3" data-domain="citoyennete" data-axis="bien-etre">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                J’ai autour de moi au moins une ou deux personnes sur qui je peux compter
+              </p>
+            </div>
+            <div class="question-card" data-question-id="citoyennete-4" data-domain="citoyennete" data-axis="ressources">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je connais des lieux ou dispositifs où les jeunes peuvent s’engager ou être écoutés
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 8 – RESSOURCES FINANCIÈRES -->
+      <section id="page-8" class="page">
+        <div class="ls-section-card px-5 md:px-8 py-7 md:py-9">
+          <div class="flex flex-wrap justify-between gap-3 mb-5">
+            <div>
+              <div class="domain-tag bg-[#FFECB3] text-[var(--ls-red)] mb-2">Domaine 8</div>
+              <h2 class="ls-title text-[1.5rem] text-[var(--ls-red)] mb-1">Budget & ressources financières</h2>
+              <p class="text-sm text-slate-700 max-w-2xl">
+                On parle ici de ton rapport à l’argent, de ta manière de gérer les entrées / sorties et de ta sécurité financière.
+              </p>
+            </div>
+            <div class="floating-badge text-[0.7rem]">
+              <span>💰</span><span>Objectif : clarifier et sécuriser ton budget</span>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="question-card" data-question-id="budget-1" data-domain="budget" data-axis="personnalite">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je connais globalement ma relation à l’argent (facile / stressante / évitée…)
+              </p>
+            </div>
+            <div class="question-card" data-question-id="budget-2" data-domain="budget" data-axis="ressources">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je sais combien d’argent entre et sort chaque mois
+              </p>
+            </div>
+            <div class="question-card" data-question-id="budget-3" data-domain="budget" data-axis="bien-etre">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je parviens à faire face aux dépenses importantes sans trop d’angoisse
+              </p>
+            </div>
+            <div class="question-card" data-question-id="budget-4" data-domain="budget" data-axis="ressources">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je connais les aides financières possibles (aides sociales, primes, dispositifs jeunes…)
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 9 – LOISIRS / SPORT / CULTURE -->
+      <section id="page-9" class="page">
+        <div class="ls-section-card px-5 md:px-8 py-7 md:py-9">
+          <div class="flex flex-wrap justify-between gap-3 mb-5">
+            <div>
+              <div class="domain-tag bg-[#C5CAE9] text-[var(--ls-red)] mb-2">Domaine 9</div>
+              <h2 class="ls-title text-[1.5rem] text-[var(--ls-red)] mb-1">Loisirs, sport & culture</h2>
+              <p class="text-sm text-slate-700 max-w-2xl">
+                Ce domaine regarde ce qui te fait du bien : activités, passions, temps libre, créativité, expressions.
+              </p>
+            </div>
+            <div class="floating-badge text-[0.7rem]">
+              <span>🎨</span><span>Objectif : repérer ce qui nourrit ton énergie</span>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="question-card" data-question-id="loisirs-1" data-domain="loisirs" data-axis="bien-etre">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                J’ai au moins une activité (sport, loisir, passion…) qui me fait du bien régulièrement
+              </p>
+            </div>
+            <div class="question-card" data-question-id="loisirs-2" data-domain="loisirs" data-axis="personnalite">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je sais ce que j’aime faire pour me détendre ou m’exprimer
+              </p>
+            </div>
+            <div class="question-card" data-question-id="loisirs-3" data-domain="loisirs" data-axis="valorisation">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je suis capable de parler de mes loisirs comme de vraies compétences
+              </p>
+            </div>
+            <div class="question-card" data-question-id="loisirs-4" data-domain="loisirs" data-axis="ressources">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je connais des lieux ou structures près de chez moi pour pratiquer des activités
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 10 – NUMÉRIQUE -->
+      <section id="page-10" class="page">
+        <div class="ls-section-card px-5 md:px-8 py-7 md:py-9">
+          <div class="flex flex-wrap justify-between gap-3 mb-5">
+            <div>
+              <div class="domain-tag bg-[#B2EBF2] text-[var(--ls-red)] mb-2">Domaine 10</div>
+              <h2 class="ls-title text-[1.5rem] text-[var(--ls-red)] mb-1">Numérique & outils en ligne</h2>
+              <p class="text-sm text-slate-700 max-w-2xl">
+                On parle de ton accès au numérique (téléphone, ordinateur, connexion) et de la façon dont tu utilises les outils.
+              </p>
+            </div>
+            <div class="floating-badge text-[0.7rem]">
+              <span>📱</span><span>Objectif : sécuriser et valoriser ton usage du numérique</span>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="question-card" data-question-id="numerique-1" data-domain="numerique" data-axis="ressources">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                J’ai accès à un téléphone et / ou un ordinateur pour mes démarches
+              </p>
+            </div>
+            <div class="question-card" data-question-id="numerique-2" data-domain="numerique" data-axis="personnalite">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je me sens à l’aise pour utiliser des sites ou applications utiles (CAF, Pôle emploi, Mission Locale…)
+              </p>
+            </div>
+            <div class="question-card" data-question-id="numerique-3" data-domain="numerique" data-axis="valorisation">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je sais utiliser le numérique pour me présenter (CV en ligne, mail, réseaux pro…)
+              </p>
+            </div>
+            <div class="question-card" data-question-id="numerique-4" data-domain="numerique" data-axis="bien-etre">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je gère plutôt bien mon temps d’écran et l’impact des réseaux sociaux sur mon moral
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 11 – MODE DE VIE -->
+      <section id="page-11" class="page">
+        <div class="ls-section-card px-5 md:px-8 py-7 md:py-9">
+          <div class="flex flex-wrap justify-between gap-3 mb-5">
+            <div>
+              <div class="domain-tag bg-[#FFCCBC] text-[var(--ls-red)] mb-2">Domaine 11</div>
+              <h2 class="ls-title text-[1.5rem] text-[var(--ls-red)] mb-1">Mode de vie & organisation du quotidien</h2>
+              <p class="text-sm text-slate-700 max-w-2xl">
+                Ici on parle de ton rythme de vie, de ton organisation, de tes habitudes (sommeil, alimentation, déplacements…).
+              </p>
+            </div>
+            <div class="floating-badge text-[0.7rem]">
+              <span>⏰</span><span>Objectif : voir si ton quotidien soutient tes projets</span>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="question-card" data-question-id="mode-1" data-domain="mode" data-axis="bien-etre">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Globalement, mon rythme de vie (sommeil, repas…) me permet de tenir mes journées
+              </p>
+            </div>
+            <div class="question-card" data-question-id="mode-2" data-domain="mode" data-axis="personnalite">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je me connais assez pour savoir quand j’ai besoin de pauses ou de temps pour moi
+              </p>
+            </div>
+            <div class="question-card" data-question-id="mode-3" data-domain="mode" data-axis="ressources">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                J’arrive à organiser mes rendez-vous, horaires et démarches sans tout oublier
+              </p>
+            </div>
+            <div class="question-card" data-question-id="mode-4" data-domain="mode" data-axis="valorisation">
+              <p class="text-[0.92rem] font-medium text-slate-800">
+                Je suis capable d’expliquer ce qui fonctionne bien ou moins bien dans mon mode de vie actuel
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 12 – RÉSULTATS -->
+      <section id="page-12" class="page">
+        <div class="ls-section-card px-5 md:px-8 py-7 md:py-9">
+          <div class="flex flex-wrap justify-between gap-3 mb-6">
+            <div>
+              <div class="ls-pill bg-[#FFE082] text-[var(--ls-red)] mb-2">Résultats & plan d’actions</div>
+              <h2 class="ls-title text-[1.6rem] text-[var(--ls-red)] mb-1">
+                Ton profil Life Skills & domaines de vie
+              </h2>
+              <p class="text-sm text-slate-700 max-w-2xl">
+                Les graphiques ci-dessous représentent une moyenne de tes réponses
+                (1 = pas encore&nbsp;&nbsp;·&nbsp;&nbsp;4 = très à l’aise).
+              </p>
+            </div>
+            <div class="floating-badge text-[0.7rem]">
+              <span>📌</span><span>À utiliser en entretien avec ton/ta conseiller·e</span>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white rounded-[20px] p-4 md:p-5 shadow-sm border border-slate-100">
+              <h3 class="font-semibold text-sm text-slate-800 mb-2 flex items-center gap-2">
+                <span>🕸️</span> <span>Radar des 4 axes Life Skills</span>
+              </h3>
+              <canvas id="lifeSkillsRadar" height="260"></canvas>
+            </div>
+
+            <div class="bg-white rounded-[20px] p-4 md:p-5 shadow-sm border border-slate-100">
+              <h3 class="font-semibold text-sm text-slate-800 mb-2 flex items-center gap-2">
+                <span>📊</span> <span>Histogramme des 11 domaines</span>
+              </h3>
+              <canvas id="domainsBar" height="260"></canvas>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-2 gap-8 mb-8">
+            <div class="bg-[#E8F5E9] rounded-[20px] p-4 md:p-5">
+              <h3 class="font-semibold text-sm text-emerald-900 mb-2 flex items-center gap-2">
+                <span>💪</span> <span>Domaines où tu es déjà à l’aise</span>
+              </h3>
+              <div id="strengthsList" class="text-sm text-emerald-900 space-y-2"></div>
+            </div>
+            <div class="bg-[#FFF3E0] rounded-[20px] p-4 md:p-5">
+              <h3 class="font-semibold text-sm text-amber-900 mb-2 flex items-center gap-2">
+                <span>🎯</span> <span>Domaines à travailler en priorité</span>
+              </h3>
+              <div id="priorityList" class="text-sm text-amber-900 space-y-2"></div>
+            </div>
+          </div>
+
+          <div class="grid lg:grid-cols-2 gap-8 mb-6">
+            <div class="bg-white rounded-[20px] p-4 md:p-5 border border-slate-100">
+              <h3 class="font-semibold text-sm text-slate-900 mb-3 flex items-center gap-2">
+                <span>📝</span> <span>Avec mon/ma conseiller·e, nous retenons que…</span>
+              </h3>
+              <textarea id="syntheseJeune" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--ls-turquoise)]"
+                        rows="4" placeholder="Ex : je suis déjà très à l’aise sur la mobilité et le numérique, mais j’ai besoin d’aide pour clarifier mon projet et mon budget."></textarea>
+            </div>
+
+            <div class="bg-white rounded-[20px] p-4 md:p-5 border border-slate-100">
+              <h3 class="font-semibold text-sm text-slate-900 mb-3 flex items-center gap-2">
+                <span>🚀</span> <span>Plan d’actions Life Skills (à intégrer au CEP)</span>
+              </h3>
+              <textarea id="planActions" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--ls-turquoise)]"
+                        rows="4" placeholder="Ex : participer à un atelier LS4YOU sur la confiance en soi ; faire un point budget ; travailler le stress avec un atelier santé mentale…"></textarea>
+              <p class="mt-2 text-[0.75rem] text-slate-500">
+                ➜ À compléter avec des activités du guide LS4YOU et des actions de la Mission Locale (emploi, formation, santé, mobilité…)
+              </p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-3 justify-between items-center">
+            <button id="downloadTxt" class="secondary-btn">
+              <span>📥 Télécharger un bilan texte</span>
+            </button>
+            <div class="flex gap-3">
+              <button id="restartBtn" class="secondary-btn">
+                <span>🔄 Recommencer</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- NAVIGATION BAS -->
+    <div class="mt-6 flex justify-between items-center">
+      <button id="prevBtn" class="secondary-btn" disabled>
+        <span>⬅️</span><span>Précédent</span>
+      </button>
+      <button id="nextBtn" class="primary-btn">
+        <span>Suivant</span><span>➡️</span>
+      </button>
+    </div>
+
+    <!-- FOOTER LOGOS -->
+    <footer class="mt-10 mb-4">
+      <div class="ls-section-card px-4 md:px-6 py-4 text-center">
+        <div class="text-[0.7rem] md:text-[0.78rem] uppercase tracking-[0.15em] text-slate-500 mb-2 font-semibold">
+          Life Skills for Youth · Mission Locale Pays Basque – Projet co-financé par Erasmus+
+        </div>
+        <div class="flex justify-center items-center gap-6 flex-wrap mb-2">
+          <img src="https://static.wixstatic.com/media/dd5dab_31e98305be67485d92cdb56f82c0e03f~mv2.png/v1/fill/w_560,h_224,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/LS4YOU_Logo.png"
+               alt="LS4YOU logo" class="h-8 md:h-10 object-contain"/>
+          <img src="https://static.wixstatic.com/media/dd5dab_47743b1c86024865ba19e623a3db327f~mv2.avif/v1/fill/w_313,h_84,al_c,lg_1,q_80,enc_avif,quality_auto/dd5dab_47743b1c86024865ba19e623a3db327f~mv2.avif"
+               alt="Mission Locale Pays Basque" class="h-8 md:h-10 object-contain"/>
+        </div>
+        <div class="capsule-frise">
+          <div class="capsule" style="background:#FFCDD2;"></div>
+          <div class="capsule" style="background:#FFE082;"></div>
+          <div class="capsule" style="background:#80DEEA;"></div>
+          <div class="capsule" style="background:#FFB74D;"></div>
+          <div class="capsule" style="background:#C5E1A5;"></div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- SCRIPT -->
+  <script>
+    const totalPages = 13; // 0 à 12
+    let currentPage = 0;
+    const answers = {}; // questionId -> 1..4
+    const questionMeta = {}; // questionId -> {domain, axis}
+
+    const domainLabels = {
+      emploi:"Emploi",
+      formation:"Formation",
+      orientation:"Projet & orientation",
+      mobilite:"Mobilité",
+      sante:"Santé",
+      logement:"Logement",
+      citoyennete:"Citoyenneté / engagement",
+      budget:"Budget",
+      loisirs:"Loisirs / sport / culture",
+      numerique:"Numérique",
+      mode:"Mode de vie"
+    };
+
+    const axisLabels = {
+      personnalite:"Personnalité",
+      valorisation:"Valorisation de soi",
+      "bien-etre":"Bien-être physique & mental",
+      ressources:"Ressources & autonomie"
+    };
+
+    const axisColors = {
+      personnalite:"#C62828",
+      valorisation:"#FFB74D",
+      "bien-etre":"#26C6DA",
+      ressources:"#81C784"
+    };
+
+    // NAVIGATION
+    const pages = [];
+    for(let i=0;i<totalPages;i++){
+      pages.push(document.getElementById(`page-${i}`));
+    }
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const globalProgressBar = document.getElementById("globalProgressBar");
+    const globalProgressText = document.getElementById("globalProgressText");
+
+    function showPage(index){
+      pages[currentPage].classList.remove("active");
+      currentPage = index;
+      pages[currentPage].classList.add("active");
+
+      prevBtn.disabled = currentPage===0;
+      nextBtn.textContent = currentPage===totalPages-1 ? "Terminé" :
+                            currentPage===totalPages-2 ? "Voir mes résultats" : "Suivant ➡️";
+
+      // step dots
+      document.querySelectorAll(".step-dot").forEach(dot=>{
+        dot.classList.toggle("active", Number(dot.dataset.step)===currentPage);
+      });
+
+      updateProgressVisual();
+      window.scrollTo({top:0,behavior:"smooth"});
+    }
+
+    prevBtn.addEventListener("click",()=>{
+      if(currentPage>0) showPage(currentPage-1);
+    });
+    nextBtn.addEventListener("click",()=>{
+      if(currentPage<totalPages-1){
+        if(currentPage===totalPages-2){ // on va vers résultats
+          buildChartsAndLists();
+        }
+        showPage(currentPage+1);
+      }
+    });
+
+    document.getElementById("startBtn").addEventListener("click",()=>showPage(1));
+    document.getElementById("skipInfoBtn").addEventListener("click",()=>showPage(1));
+
+    // STEP DOT click
+    document.querySelectorAll(".step-dot").forEach(dot=>{
+      dot.addEventListener("click",()=>{
+        const step = Number(dot.dataset.step);
+        if(step>=0 && step<totalPages){
+          if(step===totalPages-1){buildChartsAndLists();}
+          showPage(step);
+        }
+      });
+    });
+
+    // QUESTIONS – génération des boutons
+    const questionCards = document.querySelectorAll(".question-card");
+    questionCards.forEach(card=>{
+      const qid = card.dataset.questionId;
+      const domain = card.dataset.domain;
+      const axis = card.dataset.axis;
+      questionMeta[qid] = {domain,axis};
+
+      const answersRow = document.createElement("div");
+      answersRow.className = "mt-3 flex flex-wrap gap-2";
+
+      const options = [
+        {value:1, label:"Pas encore", emoji:"😅"},
+        {value:2, label:"En progrès", emoji:"🙂"},
+        {value:3, label:"À l’aise", emoji:"💪"},
+        {value:4, label:"Très à l’aise", emoji:"🌟"}
+      ];
+
+      options.forEach(opt=>{
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "answer-chip text-slate-700";
+        btn.dataset.questionId = qid;
+        btn.dataset.value = opt.value;
+        btn.innerHTML = `<span class="emoji">${opt.emoji}</span><span>${opt.label}</span>`;
+        btn.addEventListener("click",()=>selectAnswer(qid,opt.value,btn));
+        answersRow.appendChild(btn);
+      });
+
+      card.appendChild(answersRow);
+    });
+
+    function selectAnswer(qid,value,btn){
+      answers[qid] = Number(value);
+      // unselect others
+      document.querySelectorAll(`.answer-chip[data-question-id="${qid}"]`).forEach(b=>{
+        b.classList.remove("selected");
+      });
+      btn.classList.add("selected");
+      updateProgressVisual();
+    }
+
+    function updateProgressVisual(){
+      const totalQuestions = Object.keys(questionMeta).length;
+      const answered = Object.keys(answers).length;
+      const pct = totalQuestions ? Math.round((answered/totalQuestions)*100) : 0;
+      globalProgressBar.style.width = pct+"%";
+      globalProgressText.textContent = pct+"%";
+    }
+
+    // ANALYSE + CHARTS
+    let radarChart, barChart;
+
+    function buildChartsAndLists(){
+      const domainScores = {};
+      const domainCounts = {};
+      const axisScores = {};
+      const axisCounts = {};
+
+      Object.entries(answers).forEach(([qid,val])=>{
+        const meta = questionMeta[qid];
+        if(!meta) return;
+        const d = meta.domain;
+        const a = meta.axis;
+
+        domainScores[d] = (domainScores[d]||0)+val;
+        domainCounts[d] = (domainCounts[d]||0)+1;
+
+        axisScores[a] = (axisScores[a]||0)+val;
+        axisCounts[a] = (axisCounts[a]||0)+1;
+      });
+
+      const domainAvg = {};
+      Object.keys(domainScores).forEach(d=>{
+        domainAvg[d] = domainScores[d]/domainCounts[d];
+      });
+
+      const axisAvg = {};
+      Object.keys(axisScores).forEach(a=>{
+        axisAvg[a] = axisScores[a]/axisCounts[a];
+      });
+
+      const radarCtx = document.getElementById("lifeSkillsRadar").getContext("2d");
+      if(radarChart) radarChart.destroy();
+      radarChart = new Chart(radarCtx,{
+        type:"radar",
+        data:{
+          labels:Object.keys(axisLabels).map(k=>axisLabels[k]),
+          datasets:[{
+            label:"Niveau moyen (1 à 4)",
+            data:Object.keys(axisLabels).map(k=>axisAvg[k]||0),
+            backgroundColor:"rgba(198,40,40,0.18)",
+            borderColor:"rgba(198,40,40,0.9)",
+            borderWidth:2,
+            pointBackgroundColor:Object.keys(axisLabels).map(k=>axisColors[k])
+          }]
+        },
+        options:{
+          scales:{r:{min:0,max:4,ticks:{stepSize:1}}},
+          plugins:{legend:{display:false}}
+        }
+      });
+
+      const barCtx = document.getElementById("domainsBar").getContext("2d");
+      if(barChart) barChart.destroy();
+      const domainKeys = Object.keys(domainLabels);
+      barChart = new Chart(barCtx,{
+        type:"bar",
+        data:{
+          labels:domainKeys.map(d=>domainLabels[d]),
+          datasets:[{
+            label:"Niveau moyen (1 à 4)",
+            data:domainKeys.map(d=>domainAvg[d]||0),
+            backgroundColor:"#FFB74D"
+          }]
+        },
+        options:{
+          indexAxis:"y",
+          scales:{
+            x:{min:0,max:4,ticks:{stepSize:1}},
+          },
+          plugins:{legend:{display:false}}
+        }
+      });
+
+      // LISTES FORCES / PRIORITÉS
+      const strengthsList = document.getElementById("strengthsList");
+      const priorityList = document.getElementById("priorityList");
+      strengthsList.innerHTML = "";
+      priorityList.innerHTML = "";
+
+      const entries = Object.entries(domainAvg).map(([k,v])=>({key:k,val:v}));
+      entries.sort((a,b)=>b.val-a.val);
+
+      const strengths = entries.filter(e=>e.val>=3).slice(0,3);
+      const weak = entries.filter(e=>e.val>0 && e.val<3).slice(-3);
+
+      if(strengths.length===0){
+        strengthsList.innerHTML = `<p>Aucun domaine n’apparaît encore comme très solide. Ce bilan sert justement à choisir par où commencer.</p>`;
+      }else{
+        strengths.forEach(e=>{
+          const p = document.createElement("p");
+          p.innerHTML = `✅ <strong>${domainLabels[e.key]}</strong> – niveau moyen&nbsp;: ${e.val.toFixed(1)}/4`;
+          strengthsList.appendChild(p);
+        });
+      }
+
+      if(weak.length===0){
+        priorityList.innerHTML = `<p>Tu n’as pas de domaine en dessous de 3/4. Avec ton/ta conseiller·e, vous pouvez choisir quand même 1 ou 2 domaines à renforcer.</p>`;
+      }else{
+        weak.sort((a,b)=>a.val-b.val);
+        weak.forEach(e=>{
+          const p = document.createElement("p");
+          p.innerHTML = `🎯 <strong>${domainLabels[e.key]}</strong> – niveau moyen&nbsp;: ${e.val.toFixed(1)}/4`;
+          priorityList.appendChild(p);
+        });
+      }
+    }
+
+    // EXPORT TEXTE
+    document.getElementById("downloadTxt").addEventListener("click",()=>{
+      const totalQuestions = Object.keys(questionMeta).length;
+      if(totalQuestions===0){return;}
+
+      const lines = [];
+      lines.push("Bilan LS4YOU – Diagnostic Life Skills & domaines de vie");
+      lines.push("----------------------------------------------------");
+      lines.push("");
+
+      const domainScores={}; const domainCounts={};
+      Object.entries(answers).forEach(([qid,val])=>{
+        const meta = questionMeta[qid]; if(!meta) return;
+        const d = meta.domain;
+        domainScores[d]=(domainScores[d]||0)+val;
+        domainCounts[d]=(domainCounts[d]||0)+1;
+      });
+
+      Object.keys(domainLabels).forEach(d=>{
+        if(domainCounts[d]){
+          const avg = (domainScores[d]/domainCounts[d]).toFixed(1);
+          lines.push(`${domainLabels[d]} : ${avg}/4`);
+        }else{
+          lines.push(`${domainLabels[d]} : non renseigné`);
+        }
+      });
+
+      lines.push("");
+      lines.push("Synthèse rédigée avec le/la conseiller·e :");
+      lines.push(document.getElementById("syntheseJeune").value || "(à compléter)");
+      lines.push("");
+      lines.push("Plan d’actions Life Skills / CEP :");
+      lines.push(document.getElementById("planActions").value || "(à compléter)");
+
+      const blob = new Blob([lines.join("\n")],{type:"text/plain;charset=utf-8"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href=url;
+      a.download="bilan_ls4you.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // RESTART
+    document.getElementById("restartBtn").addEventListener("click",()=>{
+      if(!confirm("Recommencer le bilan depuis le début ?")) return;
+      for(const qid in answers){delete answers[qid];}
+      document.querySelectorAll(".answer-chip").forEach(b=>b.classList.remove("selected"));
+      document.getElementById("syntheseJeune").value="";
+      document.getElementById("planActions").value="";
+      updateProgressVisual();
+      showPage(0);
+    });
+
+  </script>
+</body>
+</html>
